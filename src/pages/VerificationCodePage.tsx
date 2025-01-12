@@ -25,7 +25,6 @@ function VerificationCodePage() {
             navigate('/personal-info', { state: { phone_number } });
         },
         onError: (error) => {
-            console.log(error);
             //@ts-ignore
             if (error?.response && error.response.data) {setErrorMessage(error.response.data.error_details.fa_details);
             } else if (error.message) {
