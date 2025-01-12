@@ -7,8 +7,15 @@ const apiClient = axios.create({
     },
 });
 
-// Function to send phone number and create OTP
 export const createOTP = async (phone_number:any) => {
     const response = await apiClient.post('create_otp/', { phone_number });
+    return response.data;
+};
+export const validateOTP = async (code:any, phone_number:any) => {
+    const response = await apiClient.post('validate_otp/', { code,phone_number });
+    return response.data;
+};
+export const checkAgency = async (agent_code:any) => {
+    const response = await apiClient.post('check_agency_code/', { agent_code });
     return response.data;
 };
