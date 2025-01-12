@@ -12,8 +12,8 @@ import {
 import {useLocation, useNavigate} from 'react-router-dom';
 import {animals} from "../assets/animals.ts";
 import {useEffect, useState} from "react";
-import {useMutation} from "@tanstack/react-query";
-import {checkAgency} from "../services/api.ts";
+import {useMutation, useQuery} from "@tanstack/react-query";
+import {checkAgency, getProvinces} from "../services/api.ts";
 import debounce from 'lodash.debounce';
 
 function AgencyDetailsPage() {
@@ -34,6 +34,12 @@ function AgencyDetailsPage() {
             navigate('/personal-info');
         }
     }, [phone_number, navigate,firstName, lastName]);
+
+
+    const {
+        data: provinces,
+        error: provincesError,
+    } = useQuery({queryKey: ['provinces'], queryFn: getProvinces});
 
     const checkAgencyCodeMutation = useMutation({
         mutationFn: () => checkAgency(agencyCode),
@@ -87,18 +93,19 @@ function AgencyDetailsPage() {
                                 debouncedCheckAgencyCode()
                             }}
                         />
-                        <Autocomplete
+                        {provinces && <Autocomplete
                             radius={"sm"}
                             labelPlacement={"outside"}
                             variant={"bordered"}
-                            className="max-w-[300px]]"
-                            defaultItems={animals}
+                            className="max-w-[300px]"
+                            defaultItems={provinces}
                             label="استان"
                             placeholder=""
                             isVirtualized={true}
                         >
-                            {(item) => <AutocompleteItem key={item.key}>{item.label}</AutocompleteItem>}
-                        </Autocomplete>
+                            {(item) => <AutocompleteItem key={item?.id}>{item?.name}</AutocompleteItem>}
+                        </Autocomplete>}
+                        {provincesError && <p className={"text-xs text-danger my-1"}>{provincesError.message}</p>}
                         <Autocomplete
                             radius={"sm"}
                             labelPlacement={"outside"}

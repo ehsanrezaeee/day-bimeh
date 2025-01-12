@@ -1,8 +1,8 @@
 import {useEffect, useState} from 'react';
 import {Card, CardBody, CardHeader, Button, InputOtp} from '@nextui-org/react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useMutation } from '@tanstack/react-query';
-import { validateOTP } from '../services/api';
+import {useMutation} from '@tanstack/react-query';
+import {validateOTP} from '../services/api';
 
 function VerificationCodePage() {
     const [verificationCode, setVerificationCode] = useState('');

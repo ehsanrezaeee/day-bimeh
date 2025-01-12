@@ -4,6 +4,7 @@ import MobileNumberPage from "./pages/MobileNumberPage.tsx";
 import VerificationCodePage from "./pages/VerificationCodePage.tsx";
 import PersonalInfoPage from "./pages/PersonalInfoPage.tsx";
 import AgencyDetailsPage from "./pages/AgencyDetailsPage.tsx";
+import Results from "./pages/result.tsx";
 
 function App() {
 
@@ -18,6 +19,7 @@ function App() {
                     <Route path="/verify" element={<VerificationCodePage/>}/>
                     <Route path="/personal-info" element={<PersonalInfoPage/>}/>
                     <Route path="/agency-details" element={<AgencyDetailsPage/>}/>
+                    <Route path="/result" element={<Results/>}/>
                 </Routes>
             </div>
         </Router>
