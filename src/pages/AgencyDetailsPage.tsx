@@ -13,7 +13,7 @@ import {useLocation, useNavigate} from 'react-router-dom';
 import {animals} from "../assets/animals.ts";
 import {useEffect, useState} from "react";
 import {useMutation, useQuery} from "@tanstack/react-query";
-import {checkAgency, getProvinces} from "../services/api.ts";
+import {checkAgency, getCounties, getProvinces} from "../services/api.ts";
 import debounce from 'lodash.debounce';
 import {AxiosError} from "axios";
 import {ResponseData} from "../services/types.ts";
@@ -46,6 +46,11 @@ function AgencyDetailsPage() {
         error: provincesError,
     } = useQuery({queryKey: ['provinces'], queryFn: getProvinces});
 
+    const {
+        data: counties,
+        error: countiesError,
+    } = useQuery({queryKey: ['counties'], queryFn: () => getCounties(provinceId),enabled:!!provinceId});
+
     const checkAgencyCodeMutation = useMutation({
         mutationFn: () => checkAgency(agencyCode),
         onSuccess: () => {
@@ -72,6 +77,8 @@ function AgencyDetailsPage() {
         e.preventDefault();
         navigate('/verify');
     };
+
+    console.log(counties)
 
     return (
         <>
@@ -118,15 +125,16 @@ function AgencyDetailsPage() {
                             labelPlacement={"outside"}
                             variant={"bordered"}
                             className="max-w-[300px]"
-                            defaultItems={animals}
+                            defaultItems={counties ? counties : []}
                             label="شهر"
                             name={"county"}
                             placeholder=""
                             isDisabled={!provinceId}
                             isVirtualized={true}
                         >
-                            {(item) => <AutocompleteItem key={item.key}>{item.label}</AutocompleteItem>}
+                            {(item) => <AutocompleteItem key={item.id}>{item.name}</AutocompleteItem>}
                         </Autocomplete>
+                        {countiesError && <p className={"text-xs text-danger my-1"}>{countiesError.message}</p>}
                         <Textarea variant={"bordered"} radius={"sm"} label={"آدرس"} className={"mt-2"}/>
                         <Autocomplete
                             radius={"sm"}

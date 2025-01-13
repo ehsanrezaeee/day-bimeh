@@ -30,3 +30,13 @@ export interface ResponseData {
     error_details: ErrorDetails;
     response: null;
 }
+
+export interface County {
+    id: number;
+    is_active: boolean;
+    name: string;
+    fanavaran_code: string;
+    name_split: string;
+    province: Province;
+    creator_user?: User;
+}

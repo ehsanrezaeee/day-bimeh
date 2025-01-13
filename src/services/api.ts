@@ -1,5 +1,5 @@
 import axios from 'axios';
-import {Province} from "./types.ts";
+import {County, Province} from "./types.ts";
 
 const apiClient = axios.create({
     baseURL: 'https://stage.api.sanaap.co/api/v2/app/DEY/agent/verification/signup/',
@@ -23,5 +23,10 @@ export const checkAgency = async (agent_code:any) => {
 
 export const getProvinces = async () : Promise<Province[]> => {
     const response = await axios.get('https://stage.api.sanaap.co/base/provinces_wop/');
+    return response.data;
+};
+
+export const getCounties = async (id:string) : Promise<County[]> => {
+    const response = await axios.get(`https://stage.api.sanaap.co/base/counties_wop?provinceId=${id}`);
     return response.data;
 };
