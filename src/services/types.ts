@@ -40,3 +40,20 @@ export interface County {
     province: Province;
     creator_user?: User;
 }
+
+export interface Branch {
+    id: number;
+    name: string;
+    insurance: number;
+    province: number;
+    county: number;
+}
+
+export interface BranchResource {
+    status_code: number;
+    message: string;
+    is_success: boolean;
+    error_details: ErrorDetails;
+    response: Branch[];
+}
+

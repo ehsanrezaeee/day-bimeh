@@ -10,10 +10,9 @@ import {
     Radio, Alert,
 } from '@nextui-org/react';
 import {useLocation, useNavigate} from 'react-router-dom';
-import {animals} from "../assets/animals.ts";
-import {useEffect, useState} from "react";
+import {ChangeEvent, useEffect, useState} from "react";
 import {useMutation, useQuery} from "@tanstack/react-query";
-import {checkAgency, getCounties, getProvinces} from "../services/api.ts";
+import {checkAgency, getBranch, getCounties, getProvinces} from "../services/api.ts";
 import debounce from 'lodash.debounce';
 import {AxiosError} from "axios";
 import {ResponseData} from "../services/types.ts";
@@ -25,6 +24,7 @@ function AgencyDetailsPage() {
     const [agencyCodeError, setAgencyCodeError] = useState('');
     const [agentCodeSuccess, setAgentCodeSuccess] = useState(false);
     const [provinceId, setProvinceId] = useState('');
+    const [branchName, setBranchName] = useState('');
     const location = useLocation();
 
     const { phone_number,firstName,lastName } = location.state || {};
@@ -48,11 +48,23 @@ function AgencyDetailsPage() {
         error: countiesError,refetch
     } = useQuery({queryKey: ['counties'], queryFn: () => getCounties(provinceId),enabled:!!provinceId});
 
+    const {
+        data: branch,
+        error: branchError,
+        refetch:refetchBranch
+    } = useQuery({queryKey: ['branches'], queryFn: () => getBranch(provinceId,branchName),enabled:!!provinceId});
+
     useEffect(() => {
         if (provinceId) {
             refetch()
         }
     },[provinceId]);
+
+    useEffect(() => {
+        if (branchName) {
+            refetchBranch()
+        }
+    },[branchName]);
 
     const checkAgencyCodeMutation = useMutation({
         mutationFn: () => checkAgency(agencyCode),
@@ -80,7 +92,9 @@ function AgencyDetailsPage() {
         e.preventDefault();
         navigate('/verify');
     };
-    console.log(counties)
+    const handleBranchName = debounce(({target}: ChangeEvent<HTMLInputElement>) => {
+        setBranchName(target.value);
+    },700)
 
     return (
         <>
@@ -143,13 +157,16 @@ function AgencyDetailsPage() {
                             labelPlacement={"outside"}
                             variant={"bordered"}
                             className="max-w-[300px]"
-                            defaultItems={animals}
+                            defaultItems={branch ? branch?.response : []}
                             label="شعبه بیمه"
                             placeholder=""
                             isVirtualized={true}
+                            isDisabled={!provinceId}
+                            onInput={handleBranchName}
                         >
-                            {(item) => <AutocompleteItem key={item?.key}>{item?.label}</AutocompleteItem>}
+                            {(item) => <AutocompleteItem key={item?.id}>{item?.name}</AutocompleteItem>}
                         </Autocomplete>
+                        {branchError && <p className={"text-xs text-danger my-1"}>{branchError.message}</p>}
                         <div className={"flex flex-row gap-1 w-full my-3"}>
                             <Input
                                 variant={"bordered"}
