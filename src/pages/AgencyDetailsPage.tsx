@@ -49,18 +49,19 @@ function AgencyDetailsPage() {
 
     const {
         data: counties,
-        error: countiesError,refetch
+        error: countiesError,
+        refetch: refetchCounty
     } = useQuery({queryKey: ['counties'], queryFn: () => getCounties(provinceId),enabled:!!provinceId});
 
     const {
         data: branch,
         error: branchError,
-        refetch:refetchBranch
+        refetch: refetchBranch
     } = useQuery({queryKey: ['branches'], queryFn: () => getBranch(provinceId,branchName),enabled:!!provinceId});
 
     useEffect(() => {
         if (provinceId) {
-            refetch()
+            refetchCounty()
         }
     },[provinceId]);
 
@@ -99,6 +100,7 @@ function AgencyDetailsPage() {
         onSuccess: (data) => {
             console.log(data)
             Cookies.set('SPA_TOKEN', data?.response?.access, { expires: 7 });
+            Cookies.set('Ref_TOKEN', data?.response?.refresh, { expires: 30 });
             navigate('/result', { state: data });
         },
         onError: (error: AxiosError<ResponseData>) => {
@@ -274,7 +276,7 @@ function AgencyDetailsPage() {
                                     return "لطفا یکی را انتخاب کنید.";
                                 }
                                 return validationErrors;
-                            }} isRequired={true} value={person} onValueChange={setPerson} color={"warning"} orientation={"horizontal"}>
+                            }} isRequired={true} value={person} onValueChange={setPerson} color={"danger"} orientation={"horizontal"}>
                                 <Radio classNames={{label: "text-xs", base: "mx-3"}} value="real">حقیقی</Radio>
                                 <Radio classNames={{label: "text-xs"}} value="legal">حقوقی</Radio>
                             </RadioGroup>

@@ -36,6 +36,13 @@ export const getBranch = async (id:string,name:string) : Promise<BranchResource>
     return response.data;
 };
 
+export const checkStatus = async (value:string | undefined) : Promise<BranchResource> => {
+    const response = await axios.get(`https://stage.api.sanaap.co/api/v2/app/DEY/agent/app_user_status/`,  {
+        headers:{Authorization:`Bearer ${value}`}
+    });
+    return response.data;
+};
+
 export const registerAgent = async (agent:Record<string, any>) : Promise<TokenResource> => {
     const response = await apiClient.post('/', { ...agent });
     return response.data;
