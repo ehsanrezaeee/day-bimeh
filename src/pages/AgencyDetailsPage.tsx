@@ -38,9 +38,6 @@ function AgencyDetailsPage() {
         }
     }, [phone_number, navigate,firstName, lastName]);
 
-    console.log(provinceId)
-
-
     const {
         data: provinces,
         error: provincesError,
@@ -48,8 +45,14 @@ function AgencyDetailsPage() {
 
     const {
         data: counties,
-        error: countiesError,
+        error: countiesError,refetch
     } = useQuery({queryKey: ['counties'], queryFn: () => getCounties(provinceId),enabled:!!provinceId});
+
+    useEffect(() => {
+        if (provinceId) {
+            refetch()
+        }
+    },[provinceId]);
 
     const checkAgencyCodeMutation = useMutation({
         mutationFn: () => checkAgency(agencyCode),
@@ -77,7 +80,6 @@ function AgencyDetailsPage() {
         e.preventDefault();
         navigate('/verify');
     };
-
     console.log(counties)
 
     return (
@@ -132,7 +134,7 @@ function AgencyDetailsPage() {
                             isDisabled={!provinceId}
                             isVirtualized={true}
                         >
-                            {(item) => <AutocompleteItem key={item.id}>{item.name}</AutocompleteItem>}
+                            {(item) => <AutocompleteItem key={item?.id}>{item?.name}</AutocompleteItem>}
                         </Autocomplete>
                         {countiesError && <p className={"text-xs text-danger my-1"}>{countiesError.message}</p>}
                         <Textarea variant={"bordered"} radius={"sm"} label={"آدرس"} className={"mt-2"}/>
@@ -146,7 +148,7 @@ function AgencyDetailsPage() {
                             placeholder=""
                             isVirtualized={true}
                         >
-                            {(item) => <AutocompleteItem key={item.key}>{item.label}</AutocompleteItem>}
+                            {(item) => <AutocompleteItem key={item?.key}>{item?.label}</AutocompleteItem>}
                         </Autocomplete>
                         <div className={"flex flex-row gap-1 w-full my-3"}>
                             <Input

@@ -27,6 +27,6 @@ export const getProvinces = async () : Promise<Province[]> => {
 };
 
 export const getCounties = async (id:string) : Promise<County[]> => {
-    const response = await axios.get(`https://stage.api.sanaap.co/base/counties_wop?provinceId=${id}`);
+    const response = await axios.get(`https://stage.api.sanaap.co/base/counties_wop?province=${id}`);
     return response.data;
 };
