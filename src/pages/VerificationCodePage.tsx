@@ -3,6 +3,8 @@ import {Card, CardBody, CardHeader, Button, InputOtp} from '@nextui-org/react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {useMutation} from '@tanstack/react-query';
 import {validateOTP} from '../services/api';
+import {AxiosError} from "axios";
+import {ResponseData} from "../services/types.ts";
 
 function VerificationCodePage() {
     const [verificationCode, setVerificationCode] = useState('');
@@ -24,8 +26,7 @@ function VerificationCodePage() {
             console.log(data);
             navigate('/personal-info', { state: { phone_number } });
         },
-        onError: (error) => {
-            //@ts-ignore
+        onError: (error:AxiosError<ResponseData>) => {
             if (error?.response && error.response.data) {setErrorMessage(error.response.data.error_details.fa_details);
             } else if (error.message) {
                 setErrorMessage(error.message);

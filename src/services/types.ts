@@ -14,3 +14,19 @@ export interface Province {
     name: string;
     name_split: string;
 }
+
+export interface ErrorDetails {
+    type: string;
+    code: string;
+    detail: string;
+    attr: string;
+    fa_details: string;
+}
+
+export interface ResponseData {
+    status_code: number;
+    message: string;
+    is_success: boolean;
+    error_details: ErrorDetails;
+    response: null;
+}

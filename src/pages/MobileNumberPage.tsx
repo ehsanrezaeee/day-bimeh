@@ -3,6 +3,8 @@ import { Card, CardBody, CardHeader, Input, Button } from '@nextui-org/react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { createOTP } from '../services/api';
+import {AxiosError} from "axios";
+import {ResponseData} from "../services/types.ts";
 
 function MobileNumberPage() {
     const [phone, setPhone] = useState('');
@@ -15,8 +17,7 @@ function MobileNumberPage() {
             console.log(data);
             navigate('/verify', { state: { phone_number: phone } });
         },
-        onError: (error) => {
-            //@ts-ignore
+        onError: (error:AxiosError<ResponseData>) => {
             if (error?.response && error.response.data) {setErrorMessage(error.response.data.error_details.fa_details);
             } else if (error.message) {
                 setErrorMessage(error.message);

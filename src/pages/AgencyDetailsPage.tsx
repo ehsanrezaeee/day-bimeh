@@ -15,6 +15,8 @@ import {useEffect, useState} from "react";
 import {useMutation, useQuery} from "@tanstack/react-query";
 import {checkAgency, getProvinces} from "../services/api.ts";
 import debounce from 'lodash.debounce';
+import {AxiosError} from "axios";
+import {ResponseData} from "../services/types.ts";
 
 function AgencyDetailsPage() {
     const navigate = useNavigate();
@@ -22,6 +24,7 @@ function AgencyDetailsPage() {
     const [agencyCode, setAgencyCode] = useState('');
     const [agencyCodeError, setAgencyCodeError] = useState('');
     const [agentCodeSuccess, setAgentCodeSuccess] = useState(false);
+    const [provinceId, setProvinceId] = useState('');
     const location = useLocation();
 
     const { phone_number,firstName,lastName } = location.state || {};
@@ -35,6 +38,8 @@ function AgencyDetailsPage() {
         }
     }, [phone_number, navigate,firstName, lastName]);
 
+    console.log(provinceId)
+
 
     const {
         data: provinces,
@@ -47,10 +52,10 @@ function AgencyDetailsPage() {
             setAgentCodeSuccess(true)
             setAgencyCodeError('');
         },
-        onError: (error) => {
+        onError: (error: AxiosError<ResponseData>) => {
+            console.log(error)
             setAgentCodeSuccess(false)
-            //@ts-ignore
-            if (error.response && error.response.data && error.response.data.message) {setAgencyCodeError(error.response.data.error_details.fa_details);
+            if (error.response && error.response.data && error.response.data) {setAgencyCodeError(error.response.data.error_details.fa_details);
             } else {
                 setAgencyCodeError('کد نمایندگی قبلا ثبت شده است.');
             }
@@ -61,7 +66,7 @@ function AgencyDetailsPage() {
         if (agencyCode.trim() !== '') {
             checkAgencyCodeMutation.mutate();
         }
-    }, 600);
+    }, 700);
 
     const handleSubmit = (e: any) => {
         e.preventDefault();
@@ -101,7 +106,9 @@ function AgencyDetailsPage() {
                             defaultItems={provinces}
                             label="استان"
                             placeholder=""
+                            name={"province"}
                             isVirtualized={true}
+                            onSelectionChange={key => setProvinceId(String(key))}
                         >
                             {(item) => <AutocompleteItem key={item?.id}>{item?.name}</AutocompleteItem>}
                         </Autocomplete>}
@@ -110,20 +117,22 @@ function AgencyDetailsPage() {
                             radius={"sm"}
                             labelPlacement={"outside"}
                             variant={"bordered"}
-                            className="max-w-[300px]]"
+                            className="max-w-[300px]"
                             defaultItems={animals}
                             label="شهر"
+                            name={"county"}
                             placeholder=""
+                            isDisabled={!provinceId}
                             isVirtualized={true}
                         >
                             {(item) => <AutocompleteItem key={item.key}>{item.label}</AutocompleteItem>}
                         </Autocomplete>
-                        <Textarea dir={"ltr"} variant={"bordered"} radius={"sm"} label={"آدرس"} className={"mt-2"}/>
+                        <Textarea variant={"bordered"} radius={"sm"} label={"آدرس"} className={"mt-2"}/>
                         <Autocomplete
                             radius={"sm"}
                             labelPlacement={"outside"}
                             variant={"bordered"}
-                            className="max-w-[300px]]"
+                            className="max-w-[300px]"
                             defaultItems={animals}
                             label="شعبه بیمه"
                             placeholder=""
