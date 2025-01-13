@@ -10,10 +10,9 @@ function VerificationCodePage() {
     const [verificationCode, setVerificationCode] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
     const navigate = useNavigate();
+
     const location = useLocation();
-
     const { phone_number } = location.state || {};
-
     useEffect(() => {
         if (!phone_number) {
             navigate('/');
