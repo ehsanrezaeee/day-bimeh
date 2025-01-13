@@ -1,5 +1,5 @@
 import axios from 'axios';
-import {BranchResource, County, Province} from "./types.ts";
+import {BranchResource, County, Province, TokenResource} from "./types.ts";
 
 const apiClient = axios.create({
     baseURL: 'https://stage.api.sanaap.co/api/v2/app/DEY/agent/verification/signup/',
@@ -36,7 +36,7 @@ export const getBranch = async (id:string,name:string) : Promise<BranchResource>
     return response.data;
 };
 
-export const registerAgent = async (agent:Record<string, any>) => {
+export const registerAgent = async (agent:Record<string, any>) : Promise<TokenResource> => {
     const response = await apiClient.post('/', { ...agent });
     return response.data;
 };

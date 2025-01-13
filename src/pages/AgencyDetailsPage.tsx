@@ -7,7 +7,7 @@ import {
     AutocompleteItem,
     Textarea,
     RadioGroup,
-    Radio, Alert,
+    Radio, Alert, Form,
 } from '@nextui-org/react';
 import {useLocation, useNavigate} from 'react-router-dom';
 import {ChangeEvent, FormEvent, useEffect, useState} from "react";
@@ -16,17 +16,19 @@ import {checkAgency, getBranch, getCounties, getProvinces, registerAgent} from "
 import debounce from 'lodash.debounce';
 import {AxiosError} from "axios";
 import {ResponseData} from "../services/types.ts";
+import Cookies from 'js-cookie';
 
 function AgencyDetailsPage() {
     const navigate = useNavigate();
     const [person, setPerson] = useState("حقیقی");
-    const [agencyCode, setAgencyCode] = useState('');
+    const [submissionError, setSubmissionError] = useState<AxiosError<ResponseData>>();
     const [agencyCodeError, setAgencyCodeError] = useState('');
     const [agentCodeSuccess, setAgentCodeSuccess] = useState(false);
     const [provinceId, setProvinceId] = useState('');
     const [countyId, setCountyId] = useState('');
     const [branchId, setBranchId] = useState('');
     const [branchName, setBranchName] = useState('');
+
     const location = useLocation();
 
     const { phone_number,firstName,lastName } = location.state || {};
@@ -69,7 +71,7 @@ function AgencyDetailsPage() {
     },[branchName]);
 
     const checkAgencyCodeMutation = useMutation({
-        mutationFn: () => checkAgency(agencyCode),
+        mutationFn: (code) => checkAgency(code),
         onSuccess: () => {
             setAgentCodeSuccess(true)
             setAgencyCodeError('');
@@ -84,20 +86,24 @@ function AgencyDetailsPage() {
         },
     });
 
-    const debouncedCheckAgencyCode = debounce(() => {
-        if (agencyCode.trim() !== '') {
-            checkAgencyCodeMutation.mutate();
-        }
-    }, 700);
+    const handleChangeAgencyCode = debounce(({target}: ChangeEvent<HTMLInputElement>) => {
+        checkAgencyCodeMutation.mutate(target.value as unknown as void);
+    },700)
+
+    const handleBranchName = debounce(({target}: ChangeEvent<HTMLInputElement>) => {
+        setBranchName(target.value);
+    },700)
 
     const submitMutation = useMutation({
         mutationFn: (formData: Record<string, any>) => registerAgent(formData),
         onSuccess: (data) => {
             console.log(data)
-            // navigate('/result', { state: data });
+            Cookies.set('SPA_TOKEN', data?.response?.access, { expires: 7 });
+            navigate('/result', { state: data });
         },
         onError: (error: AxiosError<ResponseData>) => {
             console.error(error);
+            setSubmissionError(error)
         },
     });
 
@@ -118,11 +124,7 @@ function AgencyDetailsPage() {
         data['county'] = countyId;
         data['insurance_branch'] = branchId;
         submitMutation.mutate(data);
-        // navigate('/verify');
     };
-    const handleBranchName = debounce(({target}: ChangeEvent<HTMLInputElement>) => {
-        setBranchName(target.value);
-    },700)
 
     return (
         <>
@@ -132,9 +134,15 @@ function AgencyDetailsPage() {
                 title:"text-xs text-start"
             }} icon={<div><img src={"/images/alert.svg"}/></div>}
                     color={"warning"} title={agencyCodeError}/>}
+            {submissionError && <Alert hideIconWrapper radius={"sm"} classNames={{
+                alertIcon: "bg-red-500 flex items-center justify-center w-7 h-7 rounded-lg",
+                base: "!z-20 fixed top-5 w-[300px] text-black",
+                title:"text-xs text-start"
+            }} icon={<div><img src={"/images/alert.svg"}/></div>}
+                    color={"danger"} title={submissionError?.response?.data?.error_details?.fa_details}/>}
             <Card shadow={"lg"} radius={"sm"} className="py-2 fixed top-24 z-10 w-[320px]">
                 <CardBody className="overflow-visible py-2 flex flex-col items-center gap-2">
-                    <form onSubmit={handleSubmit}
+                    <Form validationBehavior={"native"} onSubmit={handleSubmit}
                           className={"items-start flex flex-col w-full gap-4"}>
                         <Input
                             startContent={<p>{agentCodeSuccess && <img src={"/images/checked.svg"} alt={"checked"} /> }</p>}
@@ -144,10 +152,13 @@ function AgencyDetailsPage() {
                             labelPlacement={"outside"}
                             name={"agent_code"}
                             placeholder="کد نمایندگی"
-                            value={agencyCode}
-                            onChange={(e) => {
-                                setAgencyCode(e.target.value)
-                                debouncedCheckAgencyCode()
+                            onChange={handleChangeAgencyCode}
+                            isRequired={true}
+                            errorMessage={({validationDetails, validationErrors}) => {
+                                if (validationDetails.valueMissing) {
+                                    return "لطفا عددی را وارد کنید.";
+                                }
+                                return validationErrors;
                             }}
                         />
                         {provinces && <Autocomplete
@@ -160,6 +171,13 @@ function AgencyDetailsPage() {
                             placeholder=""
                             isVirtualized={true}
                             onSelectionChange={key => setProvinceId(String(key))}
+                            isRequired={true}
+                            errorMessage={({validationDetails, validationErrors}) => {
+                                if (validationDetails.valueMissing) {
+                                    return "لطفا استان را انتخاب کنید.";
+                                }
+                                return validationErrors;
+                            }}
                         >
                             {(item) => <AutocompleteItem key={item?.id}>{item?.name}</AutocompleteItem>}
                         </Autocomplete>}
@@ -175,11 +193,23 @@ function AgencyDetailsPage() {
                             isDisabled={!provinceId}
                             isVirtualized={true}
                             onSelectionChange={key => setCountyId(String(key))}
+                            isRequired={true}
+                            errorMessage={({validationDetails, validationErrors}) => {
+                                if (validationDetails.valueMissing) {
+                                    return "لطفا شهر را انتخاب کنید.";
+                                }
+                                return validationErrors;
+                            }}
                         >
                             {(item) => <AutocompleteItem key={item?.id}>{item?.name}</AutocompleteItem>}
                         </Autocomplete>
                         {countiesError && <p className={"text-xs text-danger my-1"}>{countiesError.message}</p>}
-                        <Textarea name={"address"} variant={"bordered"} radius={"sm"} label={"آدرس"} className={"mt-2"}/>
+                        <Textarea errorMessage={({validationDetails, validationErrors}) => {
+                            if (validationDetails.valueMissing) {
+                                return "لطفا آدرس را وارد کنید.";
+                            }
+                            return validationErrors;
+                        }} isRequired={true} name={"address"} variant={"bordered"} radius={"sm"} label={"آدرس"} className={"mt-2"}/>
                         <Autocomplete
                             radius={"sm"}
                             labelPlacement={"outside"}
@@ -192,6 +222,13 @@ function AgencyDetailsPage() {
                             isDisabled={!provinceId}
                             onInput={handleBranchName}
                             onSelectionChange={key => setBranchId(String(key))}
+                            isRequired={true}
+                            errorMessage={({validationDetails, validationErrors}) => {
+                                if (validationDetails.valueMissing) {
+                                    return "لطفا شعبه بیمه را انتخاب کنید.";
+                                }
+                                return validationErrors;
+                            }}
                         >
                             {(item) => <AutocompleteItem key={item?.id}>{item?.name}</AutocompleteItem>}
                         </Autocomplete>
@@ -205,6 +242,13 @@ function AgencyDetailsPage() {
                                 labelPlacement={"outside"}
                                 label={"تلفن ثابت"}
                                 name={"phone"}
+                                isRequired={true}
+                                errorMessage={({validationDetails, validationErrors}) => {
+                                    if (validationDetails.valueMissing) {
+                                        return "لطفا شماره تلفن ثابت را وارد کنید.";
+                                    }
+                                    return validationErrors;
+                                }}
                             />
                             <Input
                                 variant={"bordered"}
@@ -212,13 +256,25 @@ function AgencyDetailsPage() {
                                 className={"rounded-md w-[70px]"}
                                 placeholder="021"
                                 labelPlacement={"outside"}
-                                label={"کد ثابت"}
+                                label={"کد"}
                                 name={"city_code"}
+                                isRequired={true}
+                                errorMessage={({validationDetails, validationErrors}) => {
+                                    if (validationDetails.valueMissing) {
+                                        return "اجباری";
+                                    }
+                                    return validationErrors;
+                                }}
                             />
                         </div>
                         <div className={"flex flex-row gap-3 items-center w-full my-3 text-xs"}>
                             <p>نوع نمایندگی</p>
-                            <RadioGroup value={person} onValueChange={setPerson} color={"warning"} orientation={"horizontal"}>
+                            <RadioGroup errorMessage={({validationDetails, validationErrors}) => {
+                                if (validationDetails.valueMissing) {
+                                    return "لطفا یکی را انتخاب کنید.";
+                                }
+                                return validationErrors;
+                            }} isRequired={true} value={person} onValueChange={setPerson} color={"warning"} orientation={"horizontal"}>
                                 <Radio classNames={{label: "text-xs", base: "mx-3"}} value="real">حقیقی</Radio>
                                 <Radio classNames={{label: "text-xs"}} value="legal">حقوقی</Radio>
                             </RadioGroup>
@@ -227,13 +283,20 @@ function AgencyDetailsPage() {
                             variant={"bordered"}
                             classNames={{inputWrapper: "rounded-md", label: "text-xs"}}
                             className={"rounded-md"}
-                            label="نام نمایندگی"
+                            label="نام حقوقی"
                             name={"Name"}
                             labelPlacement={"outside"}
-                            placeholder="نام نمایندگی را وارد کنید"
+                            placeholder="نام حقوقی را وارد کنید"
+                            isRequired={true}
+                            errorMessage={({validationDetails, validationErrors}) => {
+                                if (validationDetails.valueMissing) {
+                                    return "لطفا نام حقوقی کنید.";
+                                }
+                                return validationErrors;
+                            }}
                         />}
-                        <Button type={"submit"} className={"w-full mt-4 bg-[#017785] text-white rounded-md"}>ثبت نام</Button>
-                    </form>
+                        <Button type={"submit"} isLoading={submitMutation?.isPending} className={"w-full mt-4 bg-[#017785] text-white rounded-md"}>ثبت نام</Button>
+                    </Form>
                 </CardBody>
             </Card>
         </>

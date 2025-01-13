@@ -57,6 +57,17 @@ export interface BranchResource {
     response: Branch[];
 }
 
+export interface TokenResource {
+    status_code: number;
+    message: string;
+    is_success: boolean;
+    error_details: ErrorDetails;
+    response: {
+        access:string;
+        refresh:string;
+    };
+}
+
 export interface agentData {
     address: number;
     agent_type: string;
