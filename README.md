@@ -4,6 +4,17 @@ This template uses PNPM as package manager so before anything please run:
 ```js
 npm install -g pnpm
 ```
+# PNPM build
+This template uses PNPM to build the project with 
+```js
+pnpm build
+```
+
+to see the built product please use following command after building the project
+```js
+pnpm preview
+```
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
