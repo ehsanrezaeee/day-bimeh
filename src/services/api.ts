@@ -35,3 +35,8 @@ export const getBranch = async (id:string,name:string) : Promise<BranchResource>
     const response = await axios.get(`https://stage.api.sanaap.co/api/v2/app/selection_item/insurance_branch/wop_list/?province=${id}&insurance=DEY&name=${name}`);
     return response.data;
 };
+
+export const registerAgent = async (agent:Record<string, any>) => {
+    const response = await apiClient.post('/', { ...agent });
+    return response.data;
+};

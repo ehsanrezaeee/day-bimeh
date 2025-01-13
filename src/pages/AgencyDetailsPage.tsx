@@ -10,9 +10,9 @@ import {
     Radio, Alert,
 } from '@nextui-org/react';
 import {useLocation, useNavigate} from 'react-router-dom';
-import {ChangeEvent, useEffect, useState} from "react";
+import {ChangeEvent, FormEvent, useEffect, useState} from "react";
 import {useMutation, useQuery} from "@tanstack/react-query";
-import {checkAgency, getBranch, getCounties, getProvinces} from "../services/api.ts";
+import {checkAgency, getBranch, getCounties, getProvinces, registerAgent} from "../services/api.ts";
 import debounce from 'lodash.debounce';
 import {AxiosError} from "axios";
 import {ResponseData} from "../services/types.ts";
@@ -24,6 +24,8 @@ function AgencyDetailsPage() {
     const [agencyCodeError, setAgencyCodeError] = useState('');
     const [agentCodeSuccess, setAgentCodeSuccess] = useState(false);
     const [provinceId, setProvinceId] = useState('');
+    const [countyId, setCountyId] = useState('');
+    const [branchId, setBranchId] = useState('');
     const [branchName, setBranchName] = useState('');
     const location = useLocation();
 
@@ -88,9 +90,35 @@ function AgencyDetailsPage() {
         }
     }, 700);
 
-    const handleSubmit = (e: any) => {
+    const submitMutation = useMutation({
+        mutationFn: (formData: Record<string, any>) => registerAgent(formData),
+        onSuccess: (data) => {
+            console.log(data)
+            // navigate('/result', { state: data });
+        },
+        onError: (error: AxiosError<ResponseData>) => {
+            console.error(error);
+        },
+    });
+
+    const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        navigate('/verify');
+        const form = e.currentTarget;
+        const formData = new FormData(form);
+
+        const data: Record<string, any> = {};
+        formData.forEach((value, key) => {
+            data[key] = value;
+        });
+        data['agency_type'] = person
+        data['first_name'] = firstName;
+        data['last_name'] = lastName;
+        data["phone_number"] = phone_number;
+        data['province'] = provinceId;
+        data['county'] = countyId;
+        data['insurance_branch'] = branchId;
+        submitMutation.mutate(data);
+        // navigate('/verify');
     };
     const handleBranchName = debounce(({target}: ChangeEvent<HTMLInputElement>) => {
         setBranchName(target.value);
@@ -114,6 +142,7 @@ function AgencyDetailsPage() {
                             classNames={{inputWrapper: "rounded-md", label: "text-xs"}}
                             className={"rounded-md"}
                             labelPlacement={"outside"}
+                            name={"agent_code"}
                             placeholder="کد نمایندگی"
                             value={agencyCode}
                             onChange={(e) => {
@@ -129,7 +158,6 @@ function AgencyDetailsPage() {
                             defaultItems={provinces}
                             label="استان"
                             placeholder=""
-                            name={"province"}
                             isVirtualized={true}
                             onSelectionChange={key => setProvinceId(String(key))}
                         >
@@ -143,15 +171,15 @@ function AgencyDetailsPage() {
                             className="max-w-[300px]"
                             defaultItems={counties ? counties : []}
                             label="شهر"
-                            name={"county"}
                             placeholder=""
                             isDisabled={!provinceId}
                             isVirtualized={true}
+                            onSelectionChange={key => setCountyId(String(key))}
                         >
                             {(item) => <AutocompleteItem key={item?.id}>{item?.name}</AutocompleteItem>}
                         </Autocomplete>
                         {countiesError && <p className={"text-xs text-danger my-1"}>{countiesError.message}</p>}
-                        <Textarea variant={"bordered"} radius={"sm"} label={"آدرس"} className={"mt-2"}/>
+                        <Textarea name={"address"} variant={"bordered"} radius={"sm"} label={"آدرس"} className={"mt-2"}/>
                         <Autocomplete
                             radius={"sm"}
                             labelPlacement={"outside"}
@@ -163,6 +191,7 @@ function AgencyDetailsPage() {
                             isVirtualized={true}
                             isDisabled={!provinceId}
                             onInput={handleBranchName}
+                            onSelectionChange={key => setBranchId(String(key))}
                         >
                             {(item) => <AutocompleteItem key={item?.id}>{item?.name}</AutocompleteItem>}
                         </Autocomplete>
@@ -172,27 +201,34 @@ function AgencyDetailsPage() {
                                 variant={"bordered"}
                                 classNames={{inputWrapper: "rounded-md", label: "text-xs"}}
                                 className={"rounded-md"}
-                                placeholder="نام را وارد کنید"
+                                placeholder="تلفن ثابت"
+                                labelPlacement={"outside"}
+                                label={"تلفن ثابت"}
+                                name={"phone"}
                             />
                             <Input
                                 variant={"bordered"}
                                 classNames={{inputWrapper: "rounded-md", label: "text-xs"}}
                                 className={"rounded-md w-[70px]"}
                                 placeholder="021"
+                                labelPlacement={"outside"}
+                                label={"کد ثابت"}
+                                name={"city_code"}
                             />
                         </div>
                         <div className={"flex flex-row gap-3 items-center w-full my-3 text-xs"}>
                             <p>نوع نمایندگی</p>
                             <RadioGroup value={person} onValueChange={setPerson} color={"warning"} orientation={"horizontal"}>
-                                <Radio classNames={{label: "text-xs", base: "mx-3"}} value="حقیقی">حقیقی</Radio>
-                                <Radio classNames={{label: "text-xs"}} value="حقوقی">حقوقی</Radio>
+                                <Radio classNames={{label: "text-xs", base: "mx-3"}} value="real">حقیقی</Radio>
+                                <Radio classNames={{label: "text-xs"}} value="legal">حقوقی</Radio>
                             </RadioGroup>
                         </div>
-                        {person == "حقوقی" && <Input
+                        {person == "legal" && <Input
                             variant={"bordered"}
                             classNames={{inputWrapper: "rounded-md", label: "text-xs"}}
                             className={"rounded-md"}
                             label="نام نمایندگی"
+                            name={"Name"}
                             labelPlacement={"outside"}
                             placeholder="نام نمایندگی را وارد کنید"
                         />}

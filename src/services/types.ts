@@ -57,3 +57,19 @@ export interface BranchResource {
     response: Branch[];
 }
 
+export interface agentData {
+    address: number;
+    agent_type: string;
+    agent_code: boolean;
+    city_code: number;
+    county: number;
+    first_name: string;
+    last_name: string;
+    insurance_branch:number;
+    phone: number;
+    phone_number: number;
+    province:string;
+    Name:string
+
+}
+
