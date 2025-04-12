@@ -9,7 +9,7 @@ import {
     Textarea,
     RadioGroup,
     Radio, Alert, Form,
-} from '@nextui-org/react';
+} from "@heroui/react";
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { checkAgency, getBranch, getCounties, getProvinces, registerAgent } from "../services/api.ts";

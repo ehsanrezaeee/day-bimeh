@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Card, CardBody, CardHeader, Input, Button } from '@nextui-org/react';
+import { Card, CardBody, CardHeader, Input, Button } from "@heroui/react";
 import { useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { createOTP } from '../services/api';

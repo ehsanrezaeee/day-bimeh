@@ -1,4 +1,4 @@
-import {Button, Link} from "@nextui-org/react";
+import {Button, Link} from "@heroui/react";
 import Cookies from 'js-cookie';
 import {useQuery} from "@tanstack/react-query";
 import {checkStatus} from "../services/api.ts";
