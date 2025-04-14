@@ -2,7 +2,7 @@ import { Outlet } from "react-router-dom";
 
 const Layout = () => {
     return (
-        <div className="bg-gray-200 flex items-center justify-center w-[375px] h-screen relative">
+        <div className="flex items-center justify-center relative">
             <img
                 className="fixed top-0"
                 src="/images/Rectangle 1.png"
